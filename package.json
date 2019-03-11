@@ -1,11 +1,12 @@
 {
-  "name": "rn-bitcoinjs-lib",
-  "version": "4.0.3-1",
-  "description": "Client-side Bitcoin JavaScript library",
+  "name": "hsmrn-bitcoinjs-lib",
+  "version": "4.0.3-3",
+  "description": "Client-side Bitcoin JavaScript library with hsm",
   "main": "./src/index.js",
   "engines": {
     "node": ">=8.0.0"
   },
+  "author": "nike66",
   "keywords": [
     "bitcoinjs",
     "bitcoin",
@@ -24,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/coreyphillips/rn-bitcoinjs-lib.git"
+    "url": "https://github.com/motopig/rn-bitcoinjs-lib.git"
   },
   "files": [
     "src"

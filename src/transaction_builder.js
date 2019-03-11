@@ -639,7 +639,7 @@ function canSign (input) {
     )
 }
 
-TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue, witnessScript) {
+TransactionBuilder.prototype.sign = function (vin, keyPair, signature, redeemScript, hashType, witnessValue, witnessScript) {
   // TODO: remove keyPair.network matching in 4.0.0
   if (keyPair.network && keyPair.network !== this.network) throw new TypeError('Inconsistent network')
   if (!this.__inputs[vin]) throw new Error('No input at index: ' + vin)
@@ -656,7 +656,7 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
     throw new Error('Inconsistent redeemScript')
   }
 
-  const ourPubKey = keyPair.publicKey || keyPair.getPublicKey()
+  const ourPubKey = keyPair //keyPair.publicKey || keyPair.getPublicKey()
   if (!canSign(input)) {
     if (witnessValue !== undefined) {
       if (input.value !== undefined && input.value !== witnessValue) throw new Error('Input didn\'t match witnessValue')
@@ -682,6 +682,11 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
     signatureHash = this.__tx.hashForSignature(vin, input.signScript, hashType)
   }
 
+  // 需要 hsm 进行签名 返回需要签名字符串
+  if (signature === '') {
+    return signatureHash
+  }
+
   // enforce in order signing of public keys
   const signed = input.pubkeys.some(function (pubKey, i) {
     if (!ourPubKey.equals(pubKey)) return false
@@ -691,8 +696,8 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
     if (ourPubKey.length !== 33 && input.hasWitness) {
       throw new Error('BIP143 rejects uncompressed public keys in P2WPKH or P2WSH')
     }
-
-    const signature = keyPair.sign(signatureHash)
+    
+    // const signature = keyPair.sign(signatureHash)
     input.signatures[i] = bscript.signature.encode(signature, hashType)
     return true
   })

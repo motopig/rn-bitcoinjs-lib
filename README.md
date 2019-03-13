@@ -6,6 +6,8 @@
 
 This is a React Native compatible version of [bitcoinjs-lib](https://github.com/bitcoinjs/bitcoinjs-lib), a javascript Bitcoin library for node.js and browsers.
 
+Used for [Azure HSM](https://azure.microsoft.com/zh-tw/services/azure-dedicated-hsm/)
+
 Released under the terms of the [MIT LICENSE](LICENSE).
 
 ## Can I trust this code?

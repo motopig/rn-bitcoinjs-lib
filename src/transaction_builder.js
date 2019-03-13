@@ -640,6 +640,7 @@ function canSign (input) {
 }
 
 TransactionBuilder.prototype.sign = function (vin, keyPair, signature, redeemScript, hashType, witnessValue, witnessScript) {
+
   // TODO: remove keyPair.network matching in 4.0.0
   if (keyPair.network && keyPair.network !== this.network) throw new TypeError('Inconsistent network')
   if (!this.__inputs[vin]) throw new Error('No input at index: ' + vin)
@@ -657,6 +658,28 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, signature, redeemScr
   }
 
   const ourPubKey = keyPair //keyPair.publicKey || keyPair.getPublicKey()
+
+  // 如果签名字符串不为空 set签名
+  if (signature) {
+    // enforce in order signing of public keys
+    const signed = input.pubkeys.some(function (pubKey, i) {
+      if (!ourPubKey.equals(pubKey)) return false
+      if (input.signatures[i]) throw new Error('Signature already exists')
+
+      // TODO: add tests
+      if (ourPubKey.length !== 33 && input.hasWitness) {
+        throw new Error('BIP143 rejects uncompressed public keys in P2WPKH or P2WSH')
+      }
+      
+      input.signatures[i] = bscript.signature.encode(signature, hashType)
+      return true
+    })
+
+    if (!signed) throw new Error('Key pair cannot sign for this input')
+
+    return
+  }
+
   if (!canSign(input)) {
     if (witnessValue !== undefined) {
       if (input.value !== undefined && input.value !== witnessValue) throw new Error('Input didn\'t match witnessValue')
@@ -683,26 +706,24 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, signature, redeemScr
   }
 
   // 需要 hsm 进行签名 返回需要签名字符串
-  if (signature === '') {
-    return signatureHash
-  }
-
+  return signatureHash
+  
   // enforce in order signing of public keys
-  const signed = input.pubkeys.some(function (pubKey, i) {
-    if (!ourPubKey.equals(pubKey)) return false
-    if (input.signatures[i]) throw new Error('Signature already exists')
+  // const signed = input.pubkeys.some(function (pubKey, i) {
+  //   if (!ourPubKey.equals(pubKey)) return false
+  //   if (input.signatures[i]) throw new Error('Signature already exists')
 
-    // TODO: add tests
-    if (ourPubKey.length !== 33 && input.hasWitness) {
-      throw new Error('BIP143 rejects uncompressed public keys in P2WPKH or P2WSH')
-    }
+  //   // TODO: add tests
+  //   if (ourPubKey.length !== 33 && input.hasWitness) {
+  //     throw new Error('BIP143 rejects uncompressed public keys in P2WPKH or P2WSH')
+  //   }
     
-    // const signature = keyPair.sign(signatureHash)
-    input.signatures[i] = bscript.signature.encode(signature, hashType)
-    return true
-  })
+  //   const signature = keyPair.sign(signatureHash)
+  //   input.signatures[i] = bscript.signature.encode(signature, hashType)
+  //   return true
+  // })
 
-  if (!signed) throw new Error('Key pair cannot sign for this input')
+  // if (!signed) throw new Error('Key pair cannot sign for this input')
 }
 
 function signatureHashType (buffer) {

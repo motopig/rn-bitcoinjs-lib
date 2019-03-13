@@ -1,6 +1,6 @@
 {
   "name": "hsmrn-bitcoinjs-lib",
-  "version": "4.0.3-3",
+  "version": "4.0.3-4",
   "description": "Client-side Bitcoin JavaScript library with hsm",
   "main": "./src/index.js",
   "engines": {
